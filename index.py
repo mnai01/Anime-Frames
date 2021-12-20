@@ -1,7 +1,6 @@
-import time
 import cv2
-from colorthief import ColorThief
 import numpy as np
+from PIL import Image, ImageDraw
 
 
 def getAverageColorOfVideo():
@@ -21,16 +20,21 @@ def getAverageColorOfVideo():
     x = total / 100
     seconds = 0
 
+    # RGB or RGBA
+    # Size of window
+    # Background color
+    im = Image.new('RGB', (int(frame_count / 2), 300), (255, 255, 255))
+
     while count != frame_count:
+        draw = ImageDraw.Draw(im)
+
         # save frame as JPEG file
         cv2.imwrite("frame.jpg", image)
-
-        print('CALCULATING COLOR...')
 
         # Get Dominate color in scene
         img = cv2.imread("frame.jpg", cv2.IMREAD_UNCHANGED)
         data = np.reshape(img, (-1, 3))
-        print(data.shape)
+        # print(data.shape)
         data = np.float32(data)
         criteria = (cv2.TERM_CRITERIA_EPS +
                     cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
@@ -44,7 +48,6 @@ def getAverageColorOfVideo():
                 + str(g) + ","
                 + str(b) + "\n")
 
-        print(r, g, b)
         count += 1
 
         # Calculate Progress of frames left
@@ -52,9 +55,12 @@ def getAverageColorOfVideo():
             seconds = (count / 24)
             print('TOTAL:', (seconds / total)*100)
 
+        # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
+        draw.rectangle([(count / 2, 0), (count / 2, 300)], fill=(r, g, b))
+        im.save('pillow_imagedraw.jpg', quality=100)
+
         # Get next frame
         success, image = vidcap.read()
-
     f.close()
 
 
