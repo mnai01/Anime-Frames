@@ -36,7 +36,7 @@ def getAverageColorOfVideo():
         #         + str(dominant_color[1]) + ","
         #         + str(dominant_color[2]) + "\n")
 
-        # get image
+        # Get image
         success, image = vidcap.read()
         # print('Read a new frame: ', success)
 
