@@ -40,7 +40,7 @@ def getAverageColorOfVideo():
             seconds = (count / 24)
             print('TOTAL:', (seconds / total)*100)
 
-        # get image
+        # Get image
         success, image = vidcap.read()
 
     f.close()
