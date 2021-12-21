@@ -1,29 +1,45 @@
+from numpy.core.arrayprint import str_format
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+import time
 
 
 def getAverageColorOfVideo():
-    # get image
+    # Get image
     vidcap = cv2.VideoCapture('OnePiece.mp4')
     success, image = vidcap.read()
     count = 0
     f = open("file.txt", "a")
 
+    # Video Fps
+    fps = round(vidcap.get(cv2.CAP_PROP_FPS))
+
     # Removed all data from file
     f.seek(0)
     f.truncate()
 
-    # duration = vidcap.get(cv2.CAP_PROP_POS_MSEC)
+    # Duration = vidcap.get(cv2.CAP_PROP_POS_MSEC)
     frame_count = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
-    total = frame_count / 24
-    x = total / 100
+    total = 0
     seconds = 0
+    if(fps == 24):
+        total = frame_count / 24
+    elif(fps == 30):
+        total = frame_count / 30
+    elif(fps == 60):
+        total = frame_count / 60
+
+    # Color array
+    videoColors = []
 
     # RGB or RGBA
     # Size of window
     # Background color
     im = Image.new('RGB', (int(frame_count / 2), 300), (255, 255, 255))
+
+    start = time.time()
+    totalTime = 0.0
 
     while count != frame_count:
         draw = ImageDraw.Draw(im)
@@ -48,12 +64,40 @@ def getAverageColorOfVideo():
                 + str(g) + ","
                 + str(b) + "\n")
 
+        # Append RGB object to array
+        videoColors.append({r, g, b})
+
         count += 1
 
-        # Calculate Progress of frames left
-        if((count % 24) == 0):
-            seconds = (count / 24)
-            print('TOTAL:', (seconds / total)*100)
+        # Calculate progress of frames left of 24 fps video
+        if(fps == 24):
+            if((count % 24) == 0):
+                seconds = (count / 24)
+                print('TOTAL:', (seconds / total)*100)
+
+        # Calculate progress of frames left of 30 fps video
+        if(fps == 30):
+            if((count % 30) == 0):
+                seconds = (count / 30)
+                print('ToTAL:', (seconds / total) * 100)
+
+        # Calculate progress of frames left of 60 fps video
+        if(fps == 60):
+            if((count % 60) == 0):
+                seconds = (count / 60)
+                print('TOTAL', (seconds / total) * 100)
+
+        # Display how much time is left to finish every 5 frames
+        if((count % 5) == 0):
+
+            # Calculate total time to finish (rough estimate)
+            if(count == 5):
+                totalTime = (frame_count * (time.time() - start)) / 5
+
+            print(totalTime)
+            timeElapsed = time.time() - start
+            print(str(timeElapsed) + " seconds out of " +
+                  str(totalTime) + " seconds")
 
         # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
         draw.rectangle([(count / 2, 0), (count / 2, 300)], fill=(r, g, b))
