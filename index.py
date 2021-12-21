@@ -21,14 +21,8 @@ def getAverageColorOfVideo():
 
     # Duration = vidcap.get(cv2.CAP_PROP_POS_MSEC)
     frame_count = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
-    total = 0
+    total = frame_count / fps
     seconds = 0
-    if(fps == 24):
-        total = frame_count / 24
-    elif(fps == 30):
-        total = frame_count / 30
-    elif(fps == 60):
-        total = frame_count / 60
 
     # Color array
     videoColors = []
@@ -69,23 +63,10 @@ def getAverageColorOfVideo():
 
         count += 1
 
-        # Calculate progress of frames left of 24 fps video
-        if(fps == 24):
-            if((count % 24) == 0):
-                seconds = (count / 24)
-                print('TOTAL:', (seconds / total)*100)
-
-        # Calculate progress of frames left of 30 fps video
-        if(fps == 30):
-            if((count % 30) == 0):
-                seconds = (count / 30)
-                print('ToTAL:', (seconds / total) * 100)
-
-        # Calculate progress of frames left of 60 fps video
-        if(fps == 60):
-            if((count % 60) == 0):
-                seconds = (count / 60)
-                print('TOTAL', (seconds / total) * 100)
+        # Calculate progress of frames left
+        if((count % fps) == 0):
+            seconds = (count / fps)
+            print('TOTAL:', (seconds / total)*100)
 
         # Display how much time is left to finish every 5 frames
         if((count % 5) == 0):
