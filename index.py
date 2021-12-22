@@ -25,7 +25,7 @@ def getAverageColorOfVideo():
     seconds = 0
 
     # Color array
-    videoColors = []
+    images = []
 
     # RGB or RGBA
     # Size of window
@@ -36,8 +36,6 @@ def getAverageColorOfVideo():
     totalTime = 0.0
 
     while count != frame_count:
-        draw = ImageDraw.Draw(im)
-
         # save frame as JPEG file
         cv2.imwrite("frame.jpg", image)
 
@@ -53,20 +51,11 @@ def getAverageColorOfVideo():
             data, 1, None, criteria, 10, flags)
         b, g, r = centers[0].astype(np.int32)
 
-        # Write RGB to file
-        f.write(str(r) + ","
-                + str(g) + ","
-                + str(b) + "\n")
-
-        # Append RGB object to array
-        videoColors.append({r, g, b})
-
         count += 1
 
         # Calculate progress of frames left
         if((count % fps) == 0):
             seconds = (count / fps)
-            print('TOTAL:', (seconds / total)*100)
 
         # Display how much time is left to finish every 5 frames
         if((count % 5) == 0):
@@ -75,18 +64,31 @@ def getAverageColorOfVideo():
             if(count == 5):
                 totalTime = (frame_count * (time.time() - start)) / 5
 
-            print(totalTime)
             timeElapsed = time.time() - start
-            print(str(timeElapsed) + " seconds out of " +
-                  str(totalTime) + " seconds")
+            print(str(timeElapsed) + " seconds out of " + str(totalTime) + " seconds " +
+                  "PERCENTAGE COMPLETE: " + str((seconds / total)*100), end='\r')
 
-        # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
-        draw.rectangle([(count / 2, 0), (count / 2, 300)], fill=(r, g, b))
-        im.save('pillow_imagedraw.jpg', quality=100)
+        # Create new image
+        im = Image.new('RGB', (int(frame_count / 2),
+                               int(frame_count / 2)), (255, 255, 255))
+
+        # Get center
+        center = int(frame_count / 2) // 2
+
+        # Draw Image
+        draw = ImageDraw.Draw(im)
+        draw.ellipse((center - count / 2, center - count / 2, center +
+                      count / 2, center + count / 2), fill=(r, g, b))
+
+        # Append image to array
+        images.append(im)
 
         # Get next frame
         success, image = vidcap.read()
-    f.close()
+
+    # Create gif with images array
+    images[0].save('pillow_imagedraw.gif',
+                   save_all=True, append_images=images[1:], optimize=True, duration=20, loop=0)
 
 
 getAverageColorOfVideo()
