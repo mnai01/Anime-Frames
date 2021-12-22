@@ -41,6 +41,7 @@ def getAverageColorOfVideo():
         # save frame as JPEG file
         cv2.imwrite("frame.jpg", image)
 
+
         # Get Dominate color in scene
         img = cv2.imread("frame.jpg", cv2.IMREAD_UNCHANGED)
         data = np.reshape(img, (-1, 3))
