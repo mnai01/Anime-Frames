@@ -3,23 +3,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 import time
-
-
-def Progress(count, fps, frame_count, start):
-    # Calculate progress of frames left
-    if((count % fps) == 0):
-        seconds = (count / fps)
-
-    # Display how much time is left to finish every 5 frames
-    if((count % 5) == 0):
-
-        # Calculate total time to finish (rough estimate)
-        if(count == 5):
-            totalTime = (frame_count * (time.time() - start)) / 5
-
-        timeElapsed = time.time() - start
-        print(str(timeElapsed) + " seconds out of " + str(totalTime) + " seconds " +
-              "PERCENTAGE COMPLETE: " + str((seconds / total)*100), end='\r')
+import numexpr as ne
 
 
 def DominantColor(image):
@@ -36,6 +20,23 @@ def DominantColor(image):
     return r, g, b
 
 
+def bincount_numexpr_app(a):
+    # Alternative method NOT BEING USED
+    a2D = a.reshape(-1, a.shape[-1])
+    col_range = (256, 256, 256)  # generically : a2D.max(0)+1
+    eval_params = {'a0': a2D[:, 0], 'a1': a2D[:, 1], 'a2': a2D[:, 2],
+                   's0': col_range[0], 's1': col_range[1]}
+    a1D = ne.evaluate('a0*s0*s1+a1*s0+a2', eval_params)
+    return np.unravel_index(np.bincount(a1D).argmax(), col_range)
+
+
+def unique_count_app(a):
+    # Alternative method NOT BEING USED
+    colors, count = np.unique(
+        a.reshape(-1, a.shape[-1]), axis=0, return_counts=True)
+    return colors[count.argmax()]
+
+
 def main():
     # Get image
     vidcap = cv2.VideoCapture('OnePiece.mp4')
@@ -46,33 +47,34 @@ def main():
 
     # Duration = vidcap.get(cv2.CAP_PROP_POS_MSEC)
     frame_count = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
-    total = frame_count / fps
-    seconds = 0
 
     # RGB or RGBA
     # Size of window
     # Background color
     im = Image.new('RGB', (int(frame_count / 2), 300), (255, 255, 255))
 
-    start = time.time()
-    totalTime = 0.0
-
     while count != frame_count:
         # Get next frame
         success, image = vidcap.read()
+
+        # Scale image down
+        scale_percent = 50  # percent of original size
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
         draw = ImageDraw.Draw(im)
 
         # Get Dominant R G B
         r, g, b = DominantColor(image)
 
-        Progress(count, fps, frame_count, start)
-
         count += 1
-
+        print(str(count) + "/" + str(frame_count), end='\r')
         # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
         draw.rectangle([(count / 2, 0), (count / 2, 300)], fill=(r, g, b))
-        im.save('pillow_imagedraw.jpg', quality=100)
+    im.save('pillow_imagedraw.jpg', quality=100)
+    im.close
 
 
 main()
