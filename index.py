@@ -7,6 +7,7 @@ import numexpr as ne
 
 
 def DominantColor(image):
+    # Get Dominate color in scene
     data = np.reshape(image, (-1, 3))
     data = np.float32(data)
     criteria = (cv2.TERM_CRITERIA_EPS +
