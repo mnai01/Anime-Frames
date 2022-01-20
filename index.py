@@ -51,7 +51,6 @@ def main():
     # RGB or RGBA
     # Size of window
     # Background color
-    # im = Image.new('RGB', (int(frame_count / 2), 300), (255, 255, 255))
     im = Image.new('RGB', (1920, 1080), (255, 255, 255))
 
     while count != frame_count:
@@ -73,7 +72,6 @@ def main():
         count += 1
         print(str(count) + "/" + str(frame_count), end='\r')
         # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
-        # draw.rectangle([(count / 2, 0), (count / 2, 300)], fill=(r, g, b))
         draw.rectangle(
             [((1920 * count) / frame_count, 0), ((1920 * count) / frame_count, 1080)], fill=(r, g, b))
     im.save('pillow_imagedraw.jpg', quality=100)
