@@ -4,6 +4,9 @@ import numpy as np
 from PIL import Image, ImageDraw
 import time
 import numexpr as ne
+import os
+from imdb import IMDb
+import csv
 
 
 def DominantColor(image):
@@ -36,9 +39,10 @@ def unique_count_app(a):
     return colors[count.argmax()]
 
 
-def main():
+def ConvertVideo(video_path, imageFolder):
+    parentFolder, videoName = video_path.split('\\')
     # Get image
-    vidcap = cv2.VideoCapture('OnePiece.mp4')
+    vidcap = cv2.VideoCapture(video_path)
     count = 0
 
     # Video Fps
@@ -47,10 +51,13 @@ def main():
     # Duration = vidcap.get(cv2.CAP_PROP_POS_MSEC)
     frame_count = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
 
+    frameWidth = 2048
+    frameHeight = 2048
+
     # RGB or RGBA
     # Size of window
     # Background color
-    im = Image.new('RGB', (1920, 1080), (255, 255, 255))
+    im = Image.new('RGB', (frameWidth, frameHeight), (255, 255, 255))
 
     while count != frame_count:
         # Get next frame
@@ -72,9 +79,40 @@ def main():
         print(str(count) + "/" + str(frame_count), end='\r')
         # [(left_width_point, top_height_point), (right_width_point, bottom_height_point)]
         draw.rectangle(
-            [((1920 * count) / frame_count, 0), ((1920 * count) / frame_count, 1080)], fill=(r, g, b))
-    im.save('pillow_imagedraw.jpg', quality=100)
+            [((frameWidth * count) / frame_count, 0), ((frameWidth * count) / frame_count, frameHeight)], fill=(r, g, b))
+    im.save(f"{os.getcwd()}\{imageFolder}\{videoName}.jpg", quality=100)
     im.close
 
 
-main()
+def GetVideoInfo(imdbCode):
+    ia = IMDb()
+    movie = ia.get_movie(str(imdbCode))
+    for genre in movie['genres']:
+        print(genre)
+
+
+def WriteToCSV():
+    check_dir(os.getcwd() + "\\" + 'VideoData.csv')
+    with open('VideoData.csv', newline='') as csvfile:
+        rows = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for row in rows:
+            print(', '.join(row))
+
+
+def check_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+# HAD TO BE HARDCODED
+folderName = "AOTS1"
+for filename in os.listdir(os.getcwd() + "\\" + folderName):
+    # WriteToCSV()
+    imageFolder = folderName + "-Barcodes"
+    check_dir(f"{os.getcwd()}\{imageFolder}")
+    ConvertVideo(f"{folderName}\{filename}", imageFolder)
+
+    # imdbCode, season, ep = filename.split('-')
+    # GetVideoInfo(imdbCode)
+
+# ConvertVideo()
