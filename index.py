@@ -5,8 +5,9 @@ from PIL import Image, ImageDraw
 import time
 import numexpr as ne
 import os
-from imdb import IMDb
+from imdb import Cinemagoer
 import csv
+import json
 
 
 def DominantColor(image):
@@ -84,11 +85,35 @@ def ConvertVideo(video_path, imageFolder):
     im.close
 
 
-def GetVideoInfo(imdbCode):
-    ia = IMDb()
+def GetVideoInfo(imdbCode, jsonObj, imagePath):
+    temp = {}
+    temp['genres'] = []
+    temp['directors'] = []
+
+    ia = Cinemagoer()
     movie = ia.get_movie(str(imdbCode))
-    for genre in movie['genres']:
-        print(genre)
+    temp['name'] = movie['title']
+    try:
+        for genre in movie['genres']:
+            temp['genres'].append(genre)
+    except KeyError:
+        print(f"genre is unknown.")
+
+    try:
+        for director in movie['directors']:
+            temp['directors'].append(
+                # Needed for special foreign names
+                # director['name'].replace('ô', "o")
+                director['name'])
+    except KeyError:
+        print(f"director is unknown.")
+
+    temp['rating'] = movie['rating']
+    temp['plot'] = str(" ".join(movie['plot']).split('::', 1)[0])
+    temp["image"] = imagePath
+
+    print(temp)
+    jsonObj.append(temp)
 
 
 def WriteToCSV():
@@ -105,14 +130,21 @@ def check_dir(directory):
 
 
 # HAD TO BE HARDCODED
-folderName = "AOTS1"
+folderName = "videos"
+jsonObj = {"nft": []}
+
 for filename in os.listdir(os.getcwd() + "\\" + folderName):
-    # WriteToCSV()
     imageFolder = folderName + "-Barcodes"
     check_dir(f"{os.getcwd()}\{imageFolder}")
     ConvertVideo(f"{folderName}\{filename}", imageFolder)
 
-    # imdbCode, season, ep = filename.split('-')
-    # GetVideoInfo(imdbCode)
+    try:
+        imdbCode, season, ep = filename.split('-')
+    except:
+        imdbCode, extension = filename.split('.')
+    GetVideoInfo(imdbCode, jsonObj['nft'],
+                 f"{os.getcwd()}\{imageFolder}\{filename}.jpg")
 
-# ConvertVideo()
+# json_string = json.dumps(jsonObj)
+with open('json_data.json', 'w') as outfile:
+    json.dump(jsonObj, outfile)
