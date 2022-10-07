@@ -1,4 +1,4 @@
-# Video to Barcode converter
+# Video to Barcode converter ([See results here](https://opensea.io/collection/attack-on-titan-barcode-galleri))
 
 Video to barcode converter works by taking a video and going frame by frame and generating a line represeting the average color for that frame with our alogorithm. Then it grabs the videos general media information from imdb and adds that item to a json obj which can be used by my [Opensea-Entry-Bot](Opensea-Entry-Bot) automation bot that uploads the img as an nft to Opensea. This is good when having multiple NFTs you'd like to upload. Each image will be the same size no matter the frame count
 
@@ -47,4 +47,4 @@ ex. 4359248.mp4
 }
 ```
 
-## To turn off imdb media grab comment out line 145 GetVideoInfo()
+#### To turn off imdb media grab, comment out line 145 `GetVideoInfo()`
